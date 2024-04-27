@@ -2,21 +2,22 @@ package particles
 
 import (
 	"math"
-	"math/rand"
+	"slices"
+	"strings"
 	"time"
 )
 
 type Particle struct {
-  lifetime int
-  speed float64
+  Lifetime int64
+  Speed float64
 
-  x float64
-  y float64
+  X float64
+  Y float64
 }
 
 type ParticleParams struct {
   MaxLife int64
-  MaxSpeed int64
+  MaxSpeed float64
 
   ParticleCount int
   X int
@@ -28,7 +29,7 @@ type ParticleParams struct {
 }
 
 type NextPosition func(particle *Particle, deltaMs int64)
-type Ascii func(row, col int, count [][]int) rune
+type Ascii func(row, col int, count [][]int) string
 type Reset func(particle *Particle, params *ParticleParams)
 
 type ParticleSystem struct {
@@ -40,9 +41,16 @@ type ParticleSystem struct {
 }
 
 func NewParticleSystem(params ParticleParams) ParticleSystem {
+  particles := make([]*Particle, 0)
+
+  for i := 0; i < params.ParticleCount; i++ {
+    particles = append(particles, &Particle{})
+  }
+
   return ParticleSystem{
     ParticleParams: params,
     lastTime: time.Now().UnixMilli(),
+    particles: particles,
   }
 }
 
@@ -60,13 +68,13 @@ func (ps *ParticleSystem) Update() {
   for _, p := range ps.particles {
     ps.nextPosition(p, delta)
 
-    if p.y >= float64(ps.Y) || p.x >= float64(ps.X) {
+    if p.Y >= float64(ps.Y) || p.X >= float64(ps.X) || p.Lifetime <= 0 {
       ps.reset(p, &ps.ParticleParams)
     }
   }
 }
 
-func (ps *ParticleSystem) Display() [][]rune {
+func (ps *ParticleSystem) Display() string {
   counts := make([][]int, 0)
 
   for row := 0; row < ps.Y; row++ {
@@ -78,22 +86,28 @@ func (ps *ParticleSystem) Display() [][]rune {
   }
 
   for _, p := range ps.particles {
-    row := int(math.Floor(p.y))
-    col := int(math.Floor(p.x))
+    row := int(math.Floor(p.Y))
+    col := int(math.Round(p.X))
 
     counts[row][col]++
   }
 
-  out := make([][]rune, 0)
+  out := make([][]string, 0)
   for r, row := range counts {
-    outRow := make([]rune, 0)
-    for c, _ := range row {
+    outRow := make([]string, 0)
+    for c := range row {
       outRow = append(outRow, ps.ascii(r, c, counts))
     }
+
+    out = append(out, outRow)
   }
 
-  return out
+  slices.Reverse(out)
+  outStr := make([]string, 0)
+
+  for _, row := range out {
+    outStr = append(outStr, strings.Join(row, ""))
+  }
+
+  return strings.Join(outStr, "\n")
 }
-
-
-

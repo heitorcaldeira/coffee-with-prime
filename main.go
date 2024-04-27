@@ -30,7 +30,7 @@ var cup = `
                           ...::::::::::::....                        `
 
 func main() {
-  coffee := particles.NewCoffee(71, 20)
+  coffee := particles.NewCoffee(71, 8, 4.5)
   coffee.Start()
 
   timer := time.NewTicker(100 * time.Millisecond)
@@ -38,7 +38,7 @@ func main() {
     <- timer.C
     fmt.Print("\033[H\033[2J")
     coffee.Update()
-    fmt.Println(coffee.Display())
-    fmt.Println(cup)
+    fmt.Print(coffee.Display())
+    fmt.Print(cup)
   }
 }

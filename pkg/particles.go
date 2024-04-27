@@ -22,6 +22,7 @@ type ParticleParams struct {
   ParticleCount int
   X int
   Y int
+  Scale float64
 
   nextPosition NextPosition
   ascii Ascii
